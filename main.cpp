@@ -13,10 +13,16 @@ using namespace std;
 
 struct Osoba {
 
-    int id = 0;
+    int id = 0, idUzytkownika = 0;
     string imie = "", nazwisko = "", nrTelefonu = "", eMail = "", adresZamieszkania = "";
 };
+struct Uzytkownik {
+
+    int id = 0;
+    string login = "", haslo = "";
+};
 string wczytajLinie();
+//-------------KSIAZKA ADRESOWA-------------------
 void zapisywanieOsobyDoPliku(vector <Osoba>& osoby, int iloscOsob);
 int zapisNowejOsoby(vector <Osoba>& osoby, int iloscOsob);
 void wyszukiwaniePoImieniu(vector <Osoba>& osoby, string dane, int iloscOsob);
@@ -24,54 +30,30 @@ void wyszukiwaniePoNazwisku(vector <Osoba>& osoby, string dane, int iloscOsob);
 void wyszukajOsobe(vector <Osoba>& osoby, int iloscOsob);
 void wyswietlWszystkichAdresatow(vector <Osoba>& osoby, int iloscOsob);
 int wczytanieDanychzPliku (vector <Osoba>& osoby);
-int usunAdresata(vector <Osoba>& osoby, int iloscOsob);
-void aktualizujPoUsusnieciu (vector <Osoba>& osoby, int iloscOsob);
+void usunAdresata(vector <Osoba>& osoby, int iloscOsob);
+void aktualizujPoUsusnieciu (int idAdresataDoUsuniecia);
 void edytujAdresata(vector <Osoba>& osoby, int iloscOsob);
+void aktualizujPoEdycji (vector <Osoba>& osoby, int iloscOsob);
 int wyszukiwaniePoId(vector <Osoba>& osoby, int id, int iloscOsob);
-
+void menuKsiazkiAdresowej();
+int liczenieLiniTekstuPliku();
+//-------------LOGOWANIE UZYTKOWNIKOW--------------
+string zakrywanieHasla();
+void logowanie(vector <Uzytkownik>& uzytkownicy);
+void zapisywanieUzytkownikaDoPliku(vector <Uzytkownik>& uzytkownicy, int nrUzytkownika);
+void rejestrowanieNowejOsoby(vector <Uzytkownik>& uzytkownicy);
+void wyswietlWszystkichAdresatow(vector <Uzytkownik>& uzytkownicy);
+void wczytanieDanychzPliku (vector <Uzytkownik>& uzytkownicy);
+void menuLogowania();
+void zmianaHasla(int idUzytkownia, vector <Uzytkownik>& uzytkownicy);
 
 int main() {
 
-    vector <Osoba> osoby;
-    int iloscOsob = wczytanieDanychzPliku(osoby);
-    char wybor;
+    menuLogowania();
 
-    for(;;) {
-        system("cls");
-        cout << "Witaj w Menu Ksiazki Adresowej" << endl << endl;
-        cout << "Wybierz opcje z Menu" << endl;
-        cout << "----------------------------------------" << endl;
-        cout << "1. Zapisanie nowej osoby." << endl;
-        cout << "2. Wyszukaj osobe." << endl;
-        cout << "3. Wyswietl wszystkie osoby zapisane w ksiazce adresowej." << endl;
-        cout << "4. Usun Osobe." << endl;
-        cout << "5. Edytuj Adresata." << endl;
-        cout << "9. Zamknij program." << endl;
-        cout << "----------------------------------------" << endl;
-        wybor = getch();
-
-        switch(wybor) {
-        case '1':
-            iloscOsob = zapisNowejOsoby(osoby, iloscOsob);
-            break;
-        case '2':
-            wyszukajOsobe(osoby, iloscOsob);
-            break;
-        case '3':
-            wyswietlWszystkichAdresatow(osoby, iloscOsob);
-            break;
-        case '4':
-            iloscOsob = usunAdresata(osoby, iloscOsob);
-            break;
-        case '5':
-            edytujAdresata(osoby, iloscOsob);
-            break;
-        case '9':
-            exit (0);
-        }
-    }
 }
 
+//-------------KSIAZKA ADRESOWA-------------------
 string wczytajLinie() {
 
     string wejscie = "";
@@ -79,23 +61,39 @@ string wczytajLinie() {
     getline(cin, wejscie);
     return wejscie;
 }
-void zapisywanieOsobyDoPliku(vector <Osoba>& osoby, int iloscOsob) {
+void zapisywanieOsobyDoPliku(vector <Osoba>& osoby, int nrOsoby) {
 
     string imie, nazwisko, nrTelefonu, eMail, adresZamieszkania;
     fstream plik;
 
     plik.open("wizytowki.txt", ios::out | ios::app);
 
-    plik << osoby[iloscOsob].id << '|';
-    plik << osoby[iloscOsob].imie << '|';
-    plik << osoby[iloscOsob].nazwisko << '|';
-    plik << osoby[iloscOsob].nrTelefonu << '|';
-    plik << osoby[iloscOsob].eMail << '|';
-    plik << osoby[iloscOsob].adresZamieszkania << '|'<<endl;
+    plik << osoby[nrOsoby].id << '|';
+    plik << osoby[nrOsoby].idUzytkownika << '|';
+    plik << osoby[nrOsoby].imie << '|';
+    plik << osoby[nrOsoby].nazwisko << '|';
+    plik << osoby[nrOsoby].nrTelefonu << '|';
+    plik << osoby[nrOsoby].eMail << '|';
+    plik << osoby[nrOsoby].adresZamieszkania << '|'<<endl;
     plik.close();
 }
-int zapisNowejOsoby(vector <Osoba>& osoby, int iloscOsob) {
+void zapisywanieOsobyDoPlikuPoEdycji(vector <Osoba>& osoby, int nrOsoby) {
 
+    string imie, nazwisko, nrTelefonu, eMail, adresZamieszkania;
+    fstream plik;
+    plik.open("wizytowkiTemp2.txt", ios::out | ios::app);
+    plik << osoby[nrOsoby].id << '|';
+    plik << osoby[nrOsoby].idUzytkownika << '|';
+    plik << osoby[nrOsoby].imie << '|';
+    plik << osoby[nrOsoby].nazwisko << '|';
+    plik << osoby[nrOsoby].nrTelefonu << '|';
+    plik << osoby[nrOsoby].eMail << '|';
+    plik << osoby[nrOsoby].adresZamieszkania << '|'<<endl;
+    plik.close();
+}
+int zapisNowejOsoby(vector <Osoba>& osoby, int idUzytkownika) {
+
+    int iloscOsob = osoby.size();
     string imie, nazwisko, nrTelefonu, eMail, adresZamieszkania;
     cout << "Prosze o podanie danych osoby do zapisania:\n";
     cout << "Podaj Imie: ";
@@ -124,16 +122,29 @@ int zapisNowejOsoby(vector <Osoba>& osoby, int iloscOsob) {
     eMail = wczytajLinie();
     cout << "\nPodaj adres zamieszkania: ";
     adresZamieszkania = wczytajLinie();
-
+int liczbaAdresatow = liczenieLiniTekstuPliku();
     Osoba osobaTemp;
     osobaTemp.imie = imie;
     osobaTemp.nazwisko = nazwisko;
     osobaTemp.nrTelefonu = nrTelefonu;
     osobaTemp.eMail = eMail;
     osobaTemp.adresZamieszkania = adresZamieszkania;
-    if(osoby.size() == 0){osobaTemp.id = 1;
+    osobaTemp.idUzytkownika = idUzytkownika;
+    if(liczbaAdresatow == 0) {
+        osobaTemp.id = 1;
     }
-    else {osobaTemp.id = osoby[osoby.size() - 1].id + 1;
+    else {
+        int liczba = liczenieLiniTekstuPliku();
+        fstream plik;
+        string linia;
+        plik.open("wizytowki.txt", ios::in);
+        for(int i = 0; i < liczba-1; ++i) {
+            getline(plik, linia);
+        }
+        getline(plik, linia, '|');
+        int idOstatniegoAdresata = atoi(linia.c_str());
+        osobaTemp.id = idOstatniegoAdresata + 1;
+        plik.close();
     }
     osoby.push_back(osobaTemp);
     zapisywanieOsobyDoPliku(osoby, iloscOsob);
@@ -143,7 +154,8 @@ int zapisNowejOsoby(vector <Osoba>& osoby, int iloscOsob) {
     Sleep(1000);
     return iloscOsob + 1;
 }
-void wyszukiwaniePoImieniu(vector <Osoba>& osoby, string dane, int iloscOsob) {
+void wyszukiwaniePoImieniu(vector <Osoba>& osoby, string dane) {
+    int iloscOsob = osoby.size();
     int i = 0, osoba = 0;
     while (i < iloscOsob) {
         if (osoby[i].imie == dane) {
@@ -158,10 +170,10 @@ void wyszukiwaniePoImieniu(vector <Osoba>& osoby, string dane, int iloscOsob) {
         i++;
     }
     if (osoba == 0) cout << "Nie ma takiej osoby w bazie! " << endl << endl;
-system("Pause");
+    system("Pause");
 }
-void wyszukiwaniePoNazwisku(vector <Osoba>& osoby, string dane, int iloscOsob) {
-
+void wyszukiwaniePoNazwisku(vector <Osoba>& osoby, string dane) {
+    int iloscOsob = osoby.size();
     int i = 0, osoba = 0;
     while (i < iloscOsob) {
         if (osoby[i].nazwisko == dane) {
@@ -176,9 +188,9 @@ void wyszukiwaniePoNazwisku(vector <Osoba>& osoby, string dane, int iloscOsob) {
         i++;
     }
     if (osoba == 0) cout << "Nie ma takiej osoby w bazie! " << endl << endl;
-system("Pause");
+    system("Pause");
 }
-void wyszukajOsobe(vector <Osoba>& osoby, int iloscOsob) {
+void wyszukajOsobe(vector <Osoba>& osoby) {
 
     char wybor;
     string imie, nazwisko;
@@ -196,13 +208,13 @@ void wyszukajOsobe(vector <Osoba>& osoby, int iloscOsob) {
         case '1':
             cout << endl << "Podaj imie: ";
             imie = wczytajLinie();
-            wyszukiwaniePoImieniu(osoby, imie, iloscOsob);
+            wyszukiwaniePoImieniu(osoby, imie);
             break;
 
         case '2':
             cout << endl << "Podaj nazwisko: ";
             nazwisko = wczytajLinie();
-            wyszukiwaniePoNazwisku(osoby, nazwisko, iloscOsob);
+            wyszukiwaniePoNazwisku(osoby, nazwisko);
             break;;
         default:
             cout << endl << "Bledny wybor"<<endl;
@@ -210,8 +222,8 @@ void wyszukajOsobe(vector <Osoba>& osoby, int iloscOsob) {
         }
     }
 }
-void wyswietlWszystkichAdresatow(vector <Osoba>& osoby, int iloscOsob) {
-
+void wyswietlWszystkichAdresatow(vector <Osoba>& osoby) {
+    int iloscOsob = osoby.size();
     if(iloscOsob == 0) cout << "Ksiazka adresowa jest pusta"<<endl;
 
     for (int i = 0; i < iloscOsob; i++) {
@@ -225,46 +237,42 @@ void wyswietlWszystkichAdresatow(vector <Osoba>& osoby, int iloscOsob) {
     system("Pause");
 
 }
-int wczytanieDanychzPliku (vector <Osoba>& osoby){
+int wczytanieDanychzPliku (vector <Osoba>& osoby, int idUzytkownika) {
     Osoba osobyTemp;
     string daneOsoby{};
     fstream plik;
     plik.open("wizytowki.txt",ios::out | ios::in | ios::app);
     int pozycjaDanychOsoby;
     int iloscOsob = 0;
-    if (plik.good())
-    {
-        while(getline(plik,daneOsoby))
-        {
+    if (plik.good()) {
+        while(getline(plik,daneOsoby)) {
             string danePojedynczejOsoby{};
             pozycjaDanychOsoby = 1;
 
-            for (size_t i{}; i < daneOsoby.length(); ++i)
-            {
-                if (daneOsoby[i] != '|')
-                {
+            for (size_t i{}; i < daneOsoby.length(); ++i) {
+                if (daneOsoby[i] != '|') {
                     danePojedynczejOsoby += daneOsoby[i];
-                }
-                else
-                {
-                    switch(pozycjaDanychOsoby)
-                    {
+                } else {
+                    switch(pozycjaDanychOsoby) {
                     case 1:
                         osobyTemp.id = atoi(danePojedynczejOsoby.c_str());
                         break;
                     case 2:
-                        osobyTemp.imie = danePojedynczejOsoby;
+                        osobyTemp.idUzytkownika = atoi(danePojedynczejOsoby.c_str());
                         break;
                     case 3:
-                        osobyTemp.nazwisko = danePojedynczejOsoby;
+                        osobyTemp.imie = danePojedynczejOsoby;
                         break;
                     case 4:
-                        osobyTemp.nrTelefonu = danePojedynczejOsoby;
+                        osobyTemp.nazwisko = danePojedynczejOsoby;
                         break;
                     case 5:
-                        osobyTemp.eMail = danePojedynczejOsoby;
+                        osobyTemp.nrTelefonu = danePojedynczejOsoby;
                         break;
                     case 6:
+                        osobyTemp.eMail = danePojedynczejOsoby;
+                        break;
+                    case 7:
                         osobyTemp.adresZamieszkania = danePojedynczejOsoby;
                         break;
                     }
@@ -272,20 +280,21 @@ int wczytanieDanychzPliku (vector <Osoba>& osoby){
                     pozycjaDanychOsoby ++;
                 }
             }
-            osoby.push_back(osobyTemp);
+            if (osobyTemp.idUzytkownika == idUzytkownika) {osoby.push_back(osobyTemp);
             iloscOsob++;
+            }
         }
     }
     plik.close();
     return iloscOsob;
 }
-int usunAdresata(vector <Osoba>& osoby, int iloscOsob){
+void usunAdresata(vector <Osoba>& osoby) {
 
-int idDoUsuniecia;
-
+    int idDoUsuniecia;
+    int iloscOsob = osoby.size();
     cout << "Podaj ID adresata do usuniecia: ";
     cin >> idDoUsuniecia;
-char potwierdzenieUsuniecia;
+    char potwierdzenieUsuniecia;
     int i = 0, osoba = 0;
     while (i < iloscOsob) {
         if (osoby[i].id == idDoUsuniecia) {
@@ -298,25 +307,60 @@ char potwierdzenieUsuniecia;
                 cout << "\nAdresat o ID " << idDoUsuniecia << " zostal usuniety.\n";
                 osoba++;
 
-            }else {
-            cout << "\nAdresat o ID " << idDoUsuniecia << " nie zostal usuniety.\n";
-            system("Pause");
-            return iloscOsob;
+            } else {
+                cout << "\nAdresat o ID " << idDoUsuniecia << " nie zostal usuniety.\n";
+                system("Pause");
+                return;
             }
         }
         i++;
     }
     if (osoba == 0) cout << "Nie ma takiego ID w bazie! \n\n";
     system("Pause");
-    aktualizujPoUsusnieciu(osoby, iloscOsob - osoba);
-    return iloscOsob - osoba;
+    aktualizujPoUsusnieciu(idDoUsuniecia);
 }
-void aktualizujPoUsusnieciu (vector <Osoba>& osoby, int iloscOsob) {
-remove( "wizytowki.txt" );
+void aktualizujPoUsusnieciu (int idAdresataDoUsuniecia) {
+   fstream plik, plikTemp;
+   string linia, liniaTemp;
+   int idAdresata;
+   plik.open("wizytowki.txt", ios::in);
+    plikTemp.open("wizytowkiTemp.txt", ios::out);
+    while(getline(plik, linia)){
+        idAdresata = atoi(linia.c_str());
+        if (idAdresata == idAdresataDoUsuniecia) continue;
+        else plikTemp << linia << endl;
+    }
+    plik.close();
+    plikTemp.close();
+    remove( "wizytowki.txt" );
+    rename ("wizytowkiTemp.txt", "wizytowki.txt");
+    remove ("wizytowkiTemp.txt");
+}
+void aktualizujPoEdycji (vector <Osoba>& osoby, int nrAdresata){
 
-for (int i = 0; i < iloscOsob; i++){
-zapisywanieOsobyDoPliku(osoby, i);
-}
+    zapisywanieOsobyDoPlikuPoEdycji(osoby, nrAdresata);
+
+    fstream plik, plikTemp, plikTemp2;
+    string linia, liniaTemp, liniaTemp2;
+    int idAdresata, idAdresataTemp;
+    idAdresataTemp = osoby[nrAdresata].id;
+    plik.open("wizytowki.txt", ios::in);
+    plikTemp.open("wizytowkiTemp.txt", ios::out);
+    plikTemp2.open("wizytowkiTemp2.txt", ios::in);
+    getline(plikTemp2, liniaTemp2);
+    while(getline(plik, linia)) {
+        idAdresata = atoi(linia.c_str());
+        if (idAdresata == idAdresataTemp) plikTemp << liniaTemp2 << endl;
+        else plikTemp << linia << endl;
+    }
+    plik.close();
+    plikTemp.close();
+    plikTemp2.close();
+    remove( "wizytowki.txt" );
+    remove ("wizytowkiTemp2.txt");
+    rename ("wizytowkiTemp.txt", "wizytowki.txt");
+    remove ("wizytowkiTemp.txt");
+
 }
 int wyszukiwaniePoId(vector <Osoba>& osoby, int id, int iloscOsob) {
     int i = 0, osoba = 0;
@@ -336,7 +380,7 @@ int wyszukiwaniePoId(vector <Osoba>& osoby, int id, int iloscOsob) {
     }
     if (osoba == 0) cout << "Nie ma takiej osoby w bazie! " << endl << endl;
     system("Pause");
-return -1 ;
+    return -1 ;
 }
 void edytujAdresata(vector <Osoba>& osoby, int iloscOsob) {
 
@@ -366,7 +410,7 @@ void edytujAdresata(vector <Osoba>& osoby, int iloscOsob) {
             cout << "\nPodaj nowe imie: ";
             string nowaDana = wczytajLinie();
             osoby[nrAdresata].imie = nowaDana;
-            aktualizujPoUsusnieciu(osoby, iloscOsob);
+            aktualizujPoEdycji(osoby, nrAdresata);
             cout << "Zmieniono Imie na: " << nowaDana << " !";
             Sleep(1500);
             break;
@@ -375,7 +419,7 @@ void edytujAdresata(vector <Osoba>& osoby, int iloscOsob) {
             cout << "\nPodaj nowe nazwisko: ";
             string nowaDana = wczytajLinie();
             osoby[nrAdresata].nazwisko = nowaDana;
-            aktualizujPoUsusnieciu(osoby, iloscOsob);
+            aktualizujPoEdycji(osoby, nrAdresata);
             cout << "Zmieniono Nazwisko na: " << nowaDana << " !";
             Sleep(1500);
             break;
@@ -384,7 +428,7 @@ void edytujAdresata(vector <Osoba>& osoby, int iloscOsob) {
             cout << "\nPodaj nowy nr Telefonu: ";
             string nowaDana = wczytajLinie();
             osoby[nrAdresata].nrTelefonu = nowaDana;
-            aktualizujPoUsusnieciu(osoby, iloscOsob);
+            aktualizujPoEdycji(osoby, nrAdresata);
             cout << "Zmieniono nr Telefonu na: " << nowaDana << " !";
             Sleep(1500);
             break;
@@ -393,7 +437,7 @@ void edytujAdresata(vector <Osoba>& osoby, int iloscOsob) {
             cout << "\nPodaj nowy adres eMail: ";
             string nowaDana = wczytajLinie();
             osoby[nrAdresata].eMail = nowaDana;
-            aktualizujPoUsusnieciu(osoby, iloscOsob);
+            aktualizujPoEdycji(osoby, nrAdresata);
             cout << "Zmieniono adres eMail na: " << nowaDana << " !";
             Sleep(1500);
             break;
@@ -402,7 +446,7 @@ void edytujAdresata(vector <Osoba>& osoby, int iloscOsob) {
             cout << "\nPodaj nowy adres Zamieszkania: ";
             string nowaDana = wczytajLinie();
             osoby[nrAdresata].adresZamieszkania = nowaDana;
-            aktualizujPoUsusnieciu(osoby, iloscOsob);
+            aktualizujPoEdycji(osoby, nrAdresata);
             cout << "Zmieniono adres Zamieszkania na: " << nowaDana << " !";
             Sleep(1500);
             break;
@@ -413,4 +457,273 @@ void edytujAdresata(vector <Osoba>& osoby, int iloscOsob) {
             system("Pause");
         }
     }
+}
+void menuKsiazkiAdresowej(int idUzytkownika, vector <Uzytkownik>& uzytkownicy) {
+    vector <Osoba> osoby;
+    int iloscOsob = wczytanieDanychzPliku(osoby, idUzytkownika);
+    char wybor;
+
+    for(;;) {
+        system("cls");
+        cout << "Witaj w Menu Ksiazki Adresowej" << endl << endl;
+        cout << "Wybierz opcje z Menu" << endl;
+        cout << "----------------------------------------" << endl;
+        cout << "1. Zapisanie nowej osoby." << endl;
+        cout << "2. Wyszukaj osobe." << endl;
+        cout << "3. Wyswietl wszystkie osoby zapisane w ksiazce adresowej." << endl;
+        cout << "4. Usun Osobe." << endl;
+        cout << "5. Edytuj Adresata." << endl;
+        cout << "6. Zmien haslo." << endl;
+        cout << "7. Wyloguj sie." << endl;
+        cout << "9. Zamknij program." << endl;
+        cout << "----------------------------------------" << endl;
+        wybor = getch();
+
+        switch(wybor) {
+        case '1':
+            iloscOsob = zapisNowejOsoby(osoby, idUzytkownika);
+            break;
+        case '2':
+            wyszukajOsobe(osoby);
+            break;
+        case '3':
+            wyswietlWszystkichAdresatow(osoby);
+            break;
+        case '4':
+            usunAdresata(osoby);
+            break;
+        case '5':
+            edytujAdresata(osoby, iloscOsob);
+            break;
+        case '6':
+            zmianaHasla(idUzytkownika, uzytkownicy);
+            break;
+        case '7':
+            menuLogowania();
+            break;
+        case '9':
+            exit (0);
+        }
+    }
+}
+int liczenieLiniTekstuPliku(){
+
+    string line;
+    int count = 0;
+    ifstream f("wizytowki.txt");
+    while(getline(f, line))
+        count++;
+    return count;
+}
+
+
+//-------------LOGOWANIE UZYTKOWNIKOW--------------
+string zakrywanieHasla() {
+    constexpr char c_enter  = 13;
+    constexpr char c_backspace = 8;
+
+    string passwd;
+    char input_character;
+
+    input_character = getch();
+
+    while(input_character != c_enter) {
+
+        if(input_character == c_backspace && passwd.size()) {
+            cout << "\b \b";
+            passwd.pop_back();
+        } else if(input_character != c_backspace) {
+            cout.put('*');
+            passwd += input_character;
+        }
+
+        input_character = getch();
+    }
+    return passwd;
+}
+
+void logowanie(vector <Uzytkownik>& uzytkownicy) {
+    string login, haslo;
+
+    int iloscOsob = uzytkownicy.size();
+    if(iloscOsob == 0) {
+        cout << "Brak Zarejestrowanych Uzytkownikow"<<endl;
+        system("Pause");
+        return;
+    }
+
+    cout << "Podaj Login: ";
+    cin >> login;
+    cout << "\nPodaj Haslo: ";
+    haslo = zakrywanieHasla();
+    auto i = 0;
+    while (i <= iloscOsob) {
+        if ((uzytkownicy[i].login == login) && (uzytkownicy[i].haslo == haslo)) {
+            cout << "\nPoprawnie Zalogowano!\n";
+            system("Pause");
+            menuKsiazkiAdresowej(uzytkownicy[i].id, uzytkownicy);
+        } else {
+            i++;
+        }
+        if ( i == iloscOsob) {
+            cout << "Podano bledne dane!\n";
+            system("Pause");
+        }
+    }
+
+}
+
+void zapisywanieUzytkownikaDoPliku(vector <Uzytkownik>& uzytkownicy, int nrUzytkownika) {
+
+    string login, haslo;
+    fstream plik;
+
+    plik.open("Uzytkownicy.txt", ios::out | ios::app);
+
+    plik << uzytkownicy[nrUzytkownika].id << '|';
+    plik << uzytkownicy[nrUzytkownika].login << '|';
+    plik << uzytkownicy[nrUzytkownika].haslo << '|' << endl;
+    plik.close();
+}
+
+void rejestrowanieNowejOsoby(vector <Uzytkownik>& uzytkownicy) {
+
+    int iloscOsob = uzytkownicy.size();
+    string login, haslo;
+    cout << "Prosze o podanie danych osoby do zarejestrowania nowego uzytkownika:\n";
+    cout << "Podaj Login: ";
+    login = wczytajLinie();
+    int i = 0;
+    while (i < iloscOsob) {
+        if (uzytkownicy[i].login == login)  {
+            cout << "Taka osoba juz jest w bazie.\n";
+            system("Pause");
+            return;
+        } else {
+            i++;
+        }
+    }
+    cout << "\nPodaj haslo: ";
+    haslo = zakrywanieHasla();
+
+    Uzytkownik uzytkownikTemp;
+    uzytkownikTemp.login = login;
+    uzytkownikTemp.haslo = haslo;
+
+    if(uzytkownicy.size() == 0) {
+        uzytkownikTemp.id = 1;
+    } else {
+        uzytkownikTemp.id = uzytkownicy[uzytkownicy.size() - 1].id + 1;
+    }
+    uzytkownicy.push_back(uzytkownikTemp);
+
+    zapisywanieUzytkownikaDoPliku(uzytkownicy, iloscOsob);
+
+    cout << "\nDodano Uzytkownika";
+
+    Sleep(1000);
+
+}
+
+/*void wyswietlWszystkichAdresatow(vector <Uzytkownik>& uzytkownicy) {
+
+    int iloscOsob = uzytkownicy.size();
+    if(iloscOsob == 0) cout << "Ksiazka adresowa jest pusta"<<endl;
+
+    for (int i = 0; i < iloscOsob; i++) {
+        cout << "Id Uzytkownika:           " <<uzytkownicy[i].id << endl;
+        cout << "Login:                    " <<uzytkownicy[i].login << endl;
+        cout << "Haslo:                    " <<uzytkownicy[i].haslo << endl;
+    }
+    system("Pause");
+
+}*/
+
+void wczytanieDanychzPliku (vector <Uzytkownik>& uzytkownicy) {
+    Uzytkownik uzytkownicyTemp;
+    string daneUzytkownika{};
+    fstream plik;
+    plik.open("Uzytkownicy.txt",ios::out | ios::in | ios::app);
+    int pozycjaDanychUzytkownika;
+    int iloscOsob = 0;
+    if (plik.good()) {
+        while(getline(plik,daneUzytkownika)) {
+            string danePojedynczegoUzytkownika{};
+            pozycjaDanychUzytkownika = 1;
+
+            for (size_t i{}; i < daneUzytkownika.length(); ++i) {
+                if (daneUzytkownika[i] != '|') {
+                    danePojedynczegoUzytkownika += daneUzytkownika[i];
+                } else {
+                    switch(pozycjaDanychUzytkownika) {
+                    case 1:
+                        uzytkownicyTemp.id = atoi(danePojedynczegoUzytkownika.c_str());
+                        break;
+                    case 2:
+                        uzytkownicyTemp.login = danePojedynczegoUzytkownika;
+                        break;
+                    case 3:
+                        uzytkownicyTemp.haslo = danePojedynczegoUzytkownika;
+                        break;
+                    }
+                    danePojedynczegoUzytkownika = "";
+                    pozycjaDanychUzytkownika ++;
+                }
+            }
+            uzytkownicy.push_back(uzytkownicyTemp);
+            iloscOsob++;
+        }
+    }
+    plik.close();
+}
+
+void menuLogowania() {
+    vector <Uzytkownik> uzytkownicy;
+    wczytanieDanychzPliku(uzytkownicy);
+    char wybor;
+
+    for(;;) {
+        system("cls");
+        cout << "Witaj w Menu Ksiazki Adresowej" << endl << endl;
+        cout << "Wybierz opcje z Menu" << endl;
+        cout << "----------------------------------------" << endl;
+        cout << "1. Zaloguj." << endl;
+        cout << "2. Zarejestruj sie." << endl;
+        cout << "9. Zamknij program." << endl;
+        cout << "----------------------------------------" << endl;
+        wybor = getch();
+
+        switch(wybor) {
+        case '1':
+            logowanie(uzytkownicy);
+            break;
+        case '2':
+            rejestrowanieNowejOsoby(uzytkownicy);
+            break;
+        /*case '3':
+            wyswietlWszystkichAdresatow(uzytkownicy);
+            break;*/
+        case '9':
+            exit (0);
+        }
+    }
+}
+
+void aktualizujUzytkownikowPoZmianieHasla(vector <Uzytkownik>& uzytkownicy) {
+    int iloscOsob = uzytkownicy.size();
+    remove( "Uzytkownicy.txt" );
+
+    for (int i = 0; i < iloscOsob; i++) {
+        zapisywanieUzytkownikaDoPliku(uzytkownicy, i);
+    }
+}
+
+void zmianaHasla(int idUzytkownia, vector <Uzytkownik>& uzytkownicy) {
+    string noweHaslo;
+    cout << "Podaj Nowe Haslo: ";
+    noweHaslo = zakrywanieHasla();
+    uzytkownicy[idUzytkownia - 1].haslo = noweHaslo;
+    cout << "\nZmieniono Haslo!\n";
+    system("Pause");
+    aktualizujUzytkownikowPoZmianieHasla(uzytkownicy);
 }
